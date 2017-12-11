@@ -129,7 +129,7 @@ export default class App extends Component<{}> {
                                         <Text
                                             style={[S.textWhite,S.text15]}>{yesterday.basic.location}/{yesterday.basic.parent_city}</Text>
                                         <Text
-                                            style={[S.textWhite,{fontSize:28}]}>{todayData.tmp_min}℃ ~ {todayData.tmp_max}℃</Text>
+                                            style={[S.textWhite,{fontSize:28}]}>{yesterdayData.tmp_min}℃ ~ {yesterdayData.tmp_max}℃</Text>
                                         <Text
                                             style={[S.textWhite,S.text15]}>{yesterdayData.cond_txt_d}/{yesterdayData.cond_txt_n}</Text>
                                     </View>
