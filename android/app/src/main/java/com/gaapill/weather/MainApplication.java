@@ -1,4 +1,4 @@
-package com.weather;
+package com.gaapill.weather;
 
 import android.app.Application;
 
