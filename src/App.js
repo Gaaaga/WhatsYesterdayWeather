@@ -11,6 +11,7 @@ import {
     AsyncStorage,
     TouchableWithoutFeedback,
     Dimensions,
+    ToastAndroid,
     ImageBackground
 } from 'react-native';
 import axios from 'axios';
@@ -41,7 +42,6 @@ export default class App extends Component<{}> {
     getStorage = async() => {
         const todayDate = new Date()
         await AsyncStorage.getItem(moment(todayDate).subtract(1, 'days').format('YYYY-MM-DD')).then((data) => {
-            console.log(data)
             if (data) {
                 this.setState({
                     yesterday: JSON.parse(data),
@@ -56,7 +56,6 @@ export default class App extends Component<{}> {
         )
         await AsyncStorage.getItem(moment(todayDate).format('YYYY-MM-DD'))
             .then((data) => {
-                console.log(data)
                 if (data) {
                     this.setState({
                         forecast: JSON.parse(data),
@@ -83,22 +82,31 @@ export default class App extends Component<{}> {
                         forecast: response.data.HeWeather6[0]
                     });
                     AsyncStorage.setItem(moment(todayDate).format('YYYY-MM-DD'), JSON.stringify(response.data.HeWeather6[0]));
-                }).catch(() => {
+                }).catch((error) => {
+                    if (Platform.OS === 'android') {
+                        ToastAndroid.show(error, ToastAndroid.SHORT);
+                    }
                     this.setState({
                         loading: false,
                         refresh: false
                     });
                 })
             },
-            (error) => console.log(error.message),
+            (error) => {
+                console.log(error, 'error');
+                if (Platform.OS === 'android') {
+                    ToastAndroid.show('无法获取定位信息!请授权获取定位并打开手机GPS', ToastAndroid.SHORT);
+                }
+            },
             {timeout: 20000, maximumAge: 1000}
         );
     }
 
     refresh = () => {
         this.setState({
-            refresh: true
-        })
+            loading: true,
+            yesterdayLoading: true
+        });
         this.getData();
     }
 
@@ -157,7 +165,7 @@ export default class App extends Component<{}> {
                                         <Text
                                             style={[S.textWhite,S.text15,{backgroundColor:'transparent'}]}>{yesterday.basic.location}/{yesterday.basic.parent_city}</Text>
                                         <Text
-                                            style={[S.textWhite,{fontSize:28},{backgroundColor:'transparent'}]}>{yesterdayData.tmp_min}℃ ~ {yesterdayData.tmp_max}℃</Text>
+                                            style={[S.textWhite,{fontSize:26},{backgroundColor:'transparent'}]}>{yesterdayData.tmp_min}℃ ~ {yesterdayData.tmp_max}℃</Text>
                                         <Text
                                             style={[S.textWhite,S.text15,{backgroundColor:'transparent'}]}>{yesterdayData.cond_txt_d}/{yesterdayData.cond_txt_n}</Text>
                                     </View>
@@ -184,7 +192,7 @@ export default class App extends Component<{}> {
                                         <Text
                                             style={[S.textWhite,S.text15]}>{forecast.basic.location}/{forecast.basic.parent_city}</Text>
                                         <Text
-                                            style={[S.textWhite,{fontSize:28},{backgroundColor:'transparent'}]}>{todayData.tmp_min}℃ ~ {todayData.tmp_max}℃</Text>
+                                            style={[S.textWhite,{fontSize:26},{backgroundColor:'transparent'}]}>{todayData.tmp_min}℃ ~ {todayData.tmp_max}℃</Text>
                                         <Text
                                             style={[S.textWhite,S.text15,{backgroundColor:'transparent'}]}>{todayData.cond_txt_d}/{todayData.cond_txt_n}</Text>
                                     </View>
@@ -203,7 +211,7 @@ export default class App extends Component<{}> {
                                         <Text
                                             style={[S.textWhite,S.text15,{backgroundColor:'transparent'}]}>{forecast.basic.location}/{forecast.basic.parent_city}</Text>
                                         <Text
-                                            style={[S.textWhite,{fontSize:28},{backgroundColor:'transparent'}]}>{tomorrowData.tmp_min}℃ ~ {tomorrowData.tmp_max}℃</Text>
+                                            style={[S.textWhite,{fontSize:26},{backgroundColor:'transparent'}]}>{tomorrowData.tmp_min}℃ ~ {tomorrowData.tmp_max}℃</Text>
                                         <Text
                                             style={[S.textWhite,S.text15,{backgroundColor:'transparent'}]}>{tomorrowData.cond_txt_d}/{tomorrowData.cond_txt_n}</Text>
                                     </View>
