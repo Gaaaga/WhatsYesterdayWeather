@@ -9,7 +9,9 @@ import {
     Image,
     StatusBar,
     AsyncStorage,
-    TouchableWithoutFeedback
+    TouchableWithoutFeedback,
+    Dimensions,
+    ImageBackground
 } from 'react-native';
 import axios from 'axios';
 import moment from 'moment';
@@ -18,19 +20,50 @@ import {IconMap, ColorMap} from './iconMap';
 // 去掉黄条
 console.disableYellowBox = true;
 
+const {pgHeight, pgWidth} = Dimensions.get('window')
+
 export default class App extends Component<{}> {
     constructor() {
         super();
         this.state = {
             loading: true,
-            today: null,
+            forecast: null,
             yesterday: null,
             yesterdayLoading: true
         }
     }
 
     componentDidMount() {
+        this.getStorage();
         this.getData();
+    }
+
+    getStorage = async() => {
+        const todayDate = new Date()
+        await AsyncStorage.getItem(moment(todayDate).subtract(1, 'days').format('YYYY-MM-DD')).then((data) => {
+            console.log(data)
+            if (data) {
+                this.setState({
+                    yesterday: JSON.parse(data),
+                    yesterdayLoading: false
+                })
+            }
+        }).catch(
+            this.setState({
+                yesterday: null,
+                yesterdayLoading: false
+            })
+        )
+        await AsyncStorage.getItem(moment(todayDate).format('YYYY-MM-DD'))
+            .then((data) => {
+                console.log(data)
+                if (data) {
+                    this.setState({
+                        forecast: JSON.parse(data),
+                        loading: false
+                    })
+                }
+            })
     }
 
     getData = () => {
@@ -43,30 +76,18 @@ export default class App extends Component<{}> {
                         key: '8e099637b3184045ae7b5d532538865b'
                     }
                 }).then((response) => {
-
                     const todayDate = response.data.HeWeather6[0].update.loc;
                     this.setState({
                         loading: false,
-                        today: response.data.HeWeather6[0]
+                        refresh: false,
+                        forecast: response.data.HeWeather6[0]
                     });
-                    AsyncStorage.getItem(moment(todayDate).subtract(1, 'days').format('YYYY-MM-DD'))
-                        .then((data) => {
-                        if (data) {
-                            this.setState({
-                                yesterday: JSON.parse(data),
-                                yesterdayLoading: false
-                            })
-                        }
-                    })
-                        .catch(
-                            this.setState({
-                                yesterday: null,
-                                yesterdayLoading: false
-                            })
-                        )
                     AsyncStorage.setItem(moment(todayDate).format('YYYY-MM-DD'), JSON.stringify(response.data.HeWeather6[0]));
-                }).catch(error => {
-                    console.log(error)
+                }).catch(() => {
+                    this.setState({
+                        loading: false,
+                        refresh: false
+                    });
                 })
             },
             (error) => console.log(error.message),
@@ -76,17 +97,16 @@ export default class App extends Component<{}> {
 
     refresh = () => {
         this.setState({
-            loading: true,
-            yesterdayLoading: true
-        });
+            refresh: true
+        })
         this.getData();
     }
 
     render() {
-        const {loading, today, yesterday, yesterdayLoading} = this.state;
-        const todayData = !loading && today.daily_forecast[0],
+        const {loading, refresh, forecast, yesterday, yesterdayLoading} = this.state;
+        const todayData = !loading && forecast && forecast.daily_forecast[0],
             yesterdayData = !loading && yesterday && yesterday.daily_forecast[0],
-            tomorrowData = !loading && today.daily_forecast[1];
+            tomorrowData = !loading && forecast && forecast.daily_forecast[1];
         return (
             <View style={S.flex}>
                 <StatusBar
@@ -107,12 +127,12 @@ export default class App extends Component<{}> {
                     }
                 ]}>
                     <Text style={[S.textWhite,{fontSize:22,color:SS.titleColor}]}>昨日天气</Text>
-                    <TouchableWithoutFeedback onPress={this.refresh}>
-                        <View>
-                            <Text style={[S.textWhite,{fontSize:16,color:SS.titleColor}]}>刷新</Text>
-                        </View>
+                    {!refresh ? <TouchableWithoutFeedback onPress={this.refresh}>
+                            <View>
+                                <Text style={[S.textWhite,{fontSize:16,color:SS.titleColor}]}>刷新</Text>
 
-                    </TouchableWithoutFeedback>
+                            </View>
+                        </TouchableWithoutFeedback> : <ActivityIndicator size="small" color={SS.titleColor}/>}
 
                 </View>
                 {loading === true ?
@@ -132,70 +152,78 @@ export default class App extends Component<{}> {
                             : yesterday ?
                                 <View style={[SS.cardBox,{backgroundColor:SS.yesterColor}]}>
                                     <View style={[S.flex,S.flexJustifyBetween]}>
-                                        <Text style={[S.textWhite,{fontSize:22}]}>昨日</Text>
                                         <Text
-                                            style={[S.textWhite,S.text15]}>{yesterday.basic.location}/{yesterday.basic.parent_city}</Text>
+                                            style={[S.textWhite,{fontSize:22},{backgroundColor:'transparent'}]}>昨日</Text>
                                         <Text
-                                            style={[S.textWhite,{fontSize:28}]}>{yesterdayData.tmp_min}℃ ~ {yesterdayData.tmp_max}℃</Text>
+                                            style={[S.textWhite,S.text15,{backgroundColor:'transparent'}]}>{yesterday.basic.location}/{yesterday.basic.parent_city}</Text>
                                         <Text
-                                            style={[S.textWhite,S.text15]}>{yesterdayData.cond_txt_d}/{yesterdayData.cond_txt_n}</Text>
+                                            style={[S.textWhite,{fontSize:28},{backgroundColor:'transparent'}]}>{yesterdayData.tmp_min}℃ ~ {yesterdayData.tmp_max}℃</Text>
+                                        <Text
+                                            style={[S.textWhite,S.text15,{backgroundColor:'transparent'}]}>{yesterdayData.cond_txt_d}/{yesterdayData.cond_txt_n}</Text>
                                     </View>
                                     <View style={[S.flexJustifyCenter]}>
                                         <Image source={IconMap[yesterdayData.cond_code_d]}
                                                style={[S.flex,S.flexAlignSelfCenter,{width:90,height:90}]}
                                                resizeMode={'contain'}/>
                                         <Text
-                                            style={[SS.dateText]}>最后更新:{moment(yesterday.update.loc).format(('MM月DD日HH:mm'))}</Text>
+                                            style={[SS.dateText,{backgroundColor:'transparent'}]}>最后更新:{moment(yesterday.update.loc).format(('MM月DD日HH:mm'))}</Text>
                                     </View>
 
                                 </View> :
                                 <View style={[SS.cardBox,{backgroundColor:SS.yesterColor,height:90}]}>
                                     <Text
-                                        style={[S.flex,S.flexAlignSelfCenter,S.textWhite,{lineHeight:26,fontSize:17},S.textCenter]}>{`哎呀,没有找到昨天的天气\n明天再来试试看`}﻿</Text>
+                                        style={[S.flex,S.flexAlignSelfCenter,S.textWhite,{lineHeight:26,fontSize:17,backgroundColor:'transparent'},S.textCenter]}>{`哎呀,没有找到昨天的天气\n明天再来试试看`}﻿</Text>
                                 </View>
                         }
-                        <View style={[SS.cardBox,{backgroundColor:SS.todayColor}]}>
-                            <View style={[S.flex,S.flexJustifyBetween]}>
-                                <Text style={[S.textWhite,{fontSize:22}]}>今日</Text>
-                                <Text
-                                    style={[S.textWhite,S.text15]}>{today.basic.location}/{today.basic.parent_city}</Text>
-                                <Text
-                                    style={[S.textWhite,{fontSize:28}]}>{todayData.tmp_min}℃ ~ {todayData.tmp_max}℃</Text>
-                                <Text
-                                    style={[S.textWhite,S.text15]}>{todayData.cond_txt_d}/{todayData.cond_txt_n}</Text>
+                        {forecast ?
+                            <View>
+                                <View style={[SS.cardBox,{backgroundColor:SS.todayColor}]}>
+                                    <View style={[S.flex,S.flexJustifyBetween]}>
+                                        <Text
+                                            style={[S.textWhite,{fontSize:22},{backgroundColor:'transparent'}]}>今日</Text>
+                                        <Text
+                                            style={[S.textWhite,S.text15]}>{forecast.basic.location}/{forecast.basic.parent_city}</Text>
+                                        <Text
+                                            style={[S.textWhite,{fontSize:28},{backgroundColor:'transparent'}]}>{todayData.tmp_min}℃ ~ {todayData.tmp_max}℃</Text>
+                                        <Text
+                                            style={[S.textWhite,S.text15,{backgroundColor:'transparent'}]}>{todayData.cond_txt_d}/{todayData.cond_txt_n}</Text>
+                                    </View>
+                                    <View style={[S.flexJustifyCenter]}>
+                                        <Image source={IconMap[todayData.cond_code_d]}
+                                               style={[S.flex,S.flexAlignSelfCenter,{width:90,height:90}]}
+                                               resizeMode={'contain'}/>
+                                        <Text
+                                            style={[SS.dateText,{backgroundColor:'transparent'}]}>最后更新:{moment(forecast.update.loc).format(('MM月DD日HH:mm'))}</Text>
+                                    </View>
+                                </View>
+                                <View style={[SS.cardBox,{backgroundColor:SS.tomorrowColor}]}>
+                                    <View style={[S.flex,S.flexJustifyBetween]}>
+                                        <Text
+                                            style={[S.textWhite,{fontSize:22},{backgroundColor:'transparent'}]}>明日</Text>
+                                        <Text
+                                            style={[S.textWhite,S.text15,{backgroundColor:'transparent'}]}>{forecast.basic.location}/{forecast.basic.parent_city}</Text>
+                                        <Text
+                                            style={[S.textWhite,{fontSize:28},{backgroundColor:'transparent'}]}>{tomorrowData.tmp_min}℃ ~ {tomorrowData.tmp_max}℃</Text>
+                                        <Text
+                                            style={[S.textWhite,S.text15,{backgroundColor:'transparent'}]}>{tomorrowData.cond_txt_d}/{tomorrowData.cond_txt_n}</Text>
+                                    </View>
+                                    <View style={[S.flexJustifyCenter]}>
+                                        <Image source={IconMap[tomorrowData.cond_code_d]}
+                                               style={[S.flex,S.flexAlignSelfCenter,{width:90,height:90}]}
+                                               resizeMode={'contain'}/>
+                                        <Text
+                                            style={[SS.dateText,{backgroundColor:'transparent'}]}>最后更新:{moment(forecast.update.loc).format(('MM月DD日HH:mm'))}</Text>
+                                    </View>
+                                </View>
                             </View>
-                            <View style={[S.flexJustifyCenter]}>
-                                <Image source={IconMap[todayData.cond_code_d]}
-                                       style={[S.flex,S.flexAlignSelfCenter,{width:90,height:90}]}
-                                       resizeMode={'contain'}/>
-                                <Text
-                                    style={[SS.dateText]}>最后更新:{moment(today.update.loc).format(('MM月DD日HH:mm'))}</Text>
-                            </View>
-                        </View>
-                        <View style={[SS.cardBox,{backgroundColor:SS.tomorrowColor}]}>
-                            <View style={[S.flex,S.flexJustifyBetween]}>
-                                <Text style={[S.textWhite,{fontSize:22}]}>明日</Text>
-                                <Text
-                                    style={[S.textWhite,S.text15]}>{today.basic.location}/{today.basic.parent_city}</Text>
-                                <Text
-                                    style={[S.textWhite,{fontSize:28}]}>{tomorrowData.tmp_min}℃ ~ {tomorrowData.tmp_max}℃</Text>
-                                <Text
-                                    style={[S.textWhite,S.text15]}>{tomorrowData.cond_txt_d}/{tomorrowData.cond_txt_n}</Text>
-                            </View>
-                            <View style={[S.flexJustifyCenter]}>
-                                <Image source={IconMap[tomorrowData.cond_code_d]}
-                                       style={[S.flex,S.flexAlignSelfCenter,{width:90,height:90}]}
-                                       resizeMode={'contain'}/>
-                                <Text
-                                    style={[SS.dateText]}>最后更新:{moment(today.update.loc).format(('MM月DD日HH:mm'))}</Text>
-                            </View>
-                        </View>
+                            : null}
 
                     </ScrollView>
                 }
                 {!loading && !yesterdayLoading &&
                 <View>
-                    <Text style={[{fontSize:9,marginBottom:3},S.bgDefault,S.textCenter,S.textColor3,S.marginLeft5]}>Authored by GaaPill | Data from Heweather{`\n`} Logo by Freepik.com | Icon from Dovora Interactive</Text>
+                    <Text style={[{fontSize:9,marginBottom:3},S.bgDefault,S.textCenter,S.textColor3,S.marginLeft5]}>Authored by GaaPill | Data from Heweather{`\n`}
+                        Logo by Freepik.com | Icon from Dovora Interactive</Text>
                 </View>
                 }
             </View>
