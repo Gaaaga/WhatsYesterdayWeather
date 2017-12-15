@@ -18,7 +18,6 @@ import {IconMap, ColorMap} from './iconMap';
 // 去掉黄条
 console.disableYellowBox = true;
 
-// const yesterdaydata = {"basic":{"cid":"CN101280605","location":"宝安","parent_city":"深圳","admin_area":"广东","cnty":"中国","lat":"22.56007767","lon":"113.90102386","tz":"+8.0"},"update":{"loc":"2017-12-10 23:54","utc":"2017-12-10 15:54"},"status":"ok","daily_forecast":[{"cond_code_d":"103","cond_code_n":"101","cond_txt_d":"晴间多云","cond_txt_n":"多云","date":"2017-12-10","hum":"32","mr":"14:49","ms":"12:35","pcpn":"0.0","pop":"0","pres":"1019","sr":"06:53","ss":"17:40","tmp_max":"21","tmp_min":"13","uv_index":"6","vis":"16","wind_deg":"0","wind_dir":"无持续风向","wind_sc":"微风","wind_spd":"6"},{"cond_code_d":"101","cond_code_n":"104","cond_txt_d":"多云","cond_txt_n":"阴","date":"2017-12-11","hum":"36","mr":"00:38","ms":"13:15","pcpn":"0.0","pop":"0","pres":"1019","sr":"06:54","ss":"17:41","tmp_max":"22","tmp_min":"13","uv_index":"6","vis":"20","wind_deg":"0","wind_dir":"无持续风向","wind_sc":"微风","wind_spd":"3"},{"cond_code_d":"104","cond_code_n":"104","cond_txt_d":"阴","cond_txt_n":"阴","date":"2017-12-12","hum":"59","mr":"01:32","ms":"13:53","pcpn":"0.2","pop":"83","pres":"1019","sr":"06:54","ss":"17:41","tmp_max":"18","tmp_min":"13","uv_index":"6","vis":"18","wind_deg":"0","wind_dir":"无持续风向","wind_sc":"微风","wind_spd":"6"}]}
 export default class App extends Component<{}> {
     constructor() {
         super();
@@ -44,6 +43,7 @@ export default class App extends Component<{}> {
                         key: '8e099637b3184045ae7b5d532538865b'
                     }
                 }).then((response) => {
+
                     const todayDate = response.data.HeWeather6[0].update.loc;
                     this.setState({
                         loading: false,
@@ -85,7 +85,8 @@ export default class App extends Component<{}> {
     render() {
         const {loading, today, yesterday, yesterdayLoading} = this.state;
         const todayData = !loading && today.daily_forecast[0],
-            yesterdayData = !loading && yesterday && yesterday.daily_forecast[0];
+            yesterdayData = !loading && yesterday && yesterday.daily_forecast[0],
+            tomorrowData = !loading && today.daily_forecast[1];
         return (
             <View style={S.flex}>
                 <StatusBar
@@ -105,10 +106,10 @@ export default class App extends Component<{}> {
                         paddingTop:V.statusHeight
                     }
                 ]}>
-                    <Text style={[S.textWhite,{fontSize:22,color:'#815FC0'}]}>昨日天气</Text>
+                    <Text style={[S.textWhite,{fontSize:22,color:SS.titleColor}]}>昨日天气</Text>
                     <TouchableWithoutFeedback onPress={this.refresh}>
                         <View>
-                            <Text style={[S.textWhite,{fontSize:16,color:'#815FC0'}]}>刷新</Text>
+                            <Text style={[S.textWhite,{fontSize:16,color:SS.titleColor}]}>刷新</Text>
                         </View>
 
                     </TouchableWithoutFeedback>
@@ -116,7 +117,7 @@ export default class App extends Component<{}> {
                 </View>
                 {loading === true ?
                     <View style={{marginTop:80}}>
-                        <ActivityIndicator size="large" color={'#815FC0'}/>
+                        <ActivityIndicator size="large" color={SS.titleColor}/>
                     </View>
                     :
                     <ScrollView
@@ -126,10 +127,10 @@ export default class App extends Component<{}> {
                             ]}>
                         {yesterdayLoading ?
                             <View style={{marginTop:40}}>
-                                <ActivityIndicator size="large" color={'#FDB53E'}/>
+                                <ActivityIndicator size="large" color={SS.yesterColor}/>
                             </View>
                             : yesterday ?
-                                <View style={[SS.cardBox,{backgroundColor:'#FDB53E'}]}>
+                                <View style={[SS.cardBox,{backgroundColor:SS.yesterColor}]}>
                                     <View style={[S.flex,S.flexJustifyBetween]}>
                                         <Text style={[S.textWhite,{fontSize:22}]}>昨日</Text>
                                         <Text
@@ -148,12 +149,12 @@ export default class App extends Component<{}> {
                                     </View>
 
                                 </View> :
-                                <View style={[SS.cardBox,{backgroundColor:'#815FC0',height:90}]}>
+                                <View style={[SS.cardBox,{backgroundColor:SS.yesterColor,height:90}]}>
                                     <Text
-                                        style={[S.flex,S.flexAlignSelfCenter,S.textWhite,{lineHeight:26,fontSize:15},S.textCenter]}>{`哎呀,没有找到昨天的天气(＞﹏＜)\n明天再来试试看ヾ(≧▽≦*)o!!`}﻿</Text>
+                                        style={[S.flex,S.flexAlignSelfCenter,S.textWhite,{lineHeight:26,fontSize:17},S.textCenter]}>{`哎呀,没有找到昨天的天气\n明天再来试试看`}﻿</Text>
                                 </View>
                         }
-                        <View style={[SS.cardBox,{backgroundColor:'#666DBC'}]}>
+                        <View style={[SS.cardBox,{backgroundColor:SS.todayColor}]}>
                             <View style={[S.flex,S.flexJustifyBetween]}>
                                 <Text style={[S.textWhite,{fontSize:22}]}>今日</Text>
                                 <Text
@@ -170,12 +171,32 @@ export default class App extends Component<{}> {
                                 <Text
                                     style={[SS.dateText]}>最后更新:{moment(today.update.loc).format(('MM月DD日HH:mm'))}</Text>
                             </View>
-
                         </View>
+                        <View style={[SS.cardBox,{backgroundColor:SS.tomorrowColor}]}>
+                            <View style={[S.flex,S.flexJustifyBetween]}>
+                                <Text style={[S.textWhite,{fontSize:22}]}>明日</Text>
+                                <Text
+                                    style={[S.textWhite,S.text15]}>{today.basic.location}/{today.basic.parent_city}</Text>
+                                <Text
+                                    style={[S.textWhite,{fontSize:28}]}>{tomorrowData.tmp_min}℃ ~ {tomorrowData.tmp_max}℃</Text>
+                                <Text
+                                    style={[S.textWhite,S.text15]}>{tomorrowData.cond_txt_d}/{tomorrowData.cond_txt_n}</Text>
+                            </View>
+                            <View style={[S.flexJustifyCenter]}>
+                                <Image source={IconMap[tomorrowData.cond_code_d]}
+                                       style={[S.flex,S.flexAlignSelfCenter,{width:90,height:90}]}
+                                       resizeMode={'contain'}/>
+                                <Text
+                                    style={[SS.dateText]}>最后更新:{moment(today.update.loc).format(('MM月DD日HH:mm'))}</Text>
+                            </View>
+                        </View>
+
                     </ScrollView>
                 }
                 {!loading && !yesterdayLoading &&
-                <Text style={[{fontSize:9,marginBottom:3},S.bgDefault,S.textCenter,S.textColor3,S.marginLeft5]}>Authored by GaaPill | Data from Heweather{`\n`} Logo by Freepik.com | Icon from Dovora Interactive</Text>
+                <View>
+                    <Text style={[{fontSize:9,marginBottom:3},S.bgDefault,S.textCenter,S.textColor3,S.marginLeft5]}>Authored by GaaPill | Data from Heweather{`\n`} Logo by Freepik.com | Icon from Dovora Interactive</Text>
+                </View>
                 }
             </View>
         )
@@ -191,6 +212,10 @@ const SS = {
         S.paddingVertical15,
         S.paddingHorizontal15
     ],
-    dateText: [S.textRight, S.textWhite, S.marginRight5, S.marginTop5, {fontSize: 12}]
+    dateText: [S.textRight, S.textWhite, S.marginRight5, S.marginTop5, {fontSize: 12}],
+    titleColor: '#7b3181',
+    yesterColor: '#23BEAF',
+    todayColor: '#76AAE5',
+    tomorrowColor: '#FFB749'
 }
 // 数据来源:和风天气|Logo by Freepik.com & Dovora Interactive
