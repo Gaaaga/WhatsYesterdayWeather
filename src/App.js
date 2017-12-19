@@ -104,8 +104,7 @@ export default class App extends Component<{}> {
 
     refresh = () => {
         this.setState({
-            loading: true,
-            yesterdayLoading: true
+            loading: true
         });
         this.getData();
     }
