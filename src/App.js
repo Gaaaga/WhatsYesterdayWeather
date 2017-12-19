@@ -164,7 +164,7 @@ export default class App extends Component<{}> {
                                         <Text
                                             style={[S.textWhite,S.text15,{backgroundColor:'transparent'}]}>{yesterday.basic.location}/{yesterday.basic.parent_city}</Text>
                                         <Text
-                                            style={[S.textWhite,{fontSize:26},{backgroundColor:'transparent'}]}>{yesterdayData.tmp_min}℃ ~ {yesterdayData.tmp_max}℃</Text>
+                                            style={[S.textWhite,{fontSize:25},{backgroundColor:'transparent'}]}>{yesterdayData.tmp_min}℃ ~ {yesterdayData.tmp_max}℃</Text>
                                         <Text
                                             style={[S.textWhite,S.text15,{backgroundColor:'transparent'}]}>{yesterdayData.cond_txt_d}/{yesterdayData.cond_txt_n}</Text>
                                     </View>
@@ -191,7 +191,7 @@ export default class App extends Component<{}> {
                                         <Text
                                             style={[S.textWhite,S.text15]}>{forecast.basic.location}/{forecast.basic.parent_city}</Text>
                                         <Text
-                                            style={[S.textWhite,{fontSize:26},{backgroundColor:'transparent'}]}>{todayData.tmp_min}℃ ~ {todayData.tmp_max}℃</Text>
+                                            style={[S.textWhite,{fontSize:25},{backgroundColor:'transparent'}]}>{todayData.tmp_min}℃ ~ {todayData.tmp_max}℃</Text>
                                         <Text
                                             style={[S.textWhite,S.text15,{backgroundColor:'transparent'}]}>{todayData.cond_txt_d}/{todayData.cond_txt_n}</Text>
                                     </View>
@@ -210,7 +210,7 @@ export default class App extends Component<{}> {
                                         <Text
                                             style={[S.textWhite,S.text15,{backgroundColor:'transparent'}]}>{forecast.basic.location}/{forecast.basic.parent_city}</Text>
                                         <Text
-                                            style={[S.textWhite,{fontSize:26},{backgroundColor:'transparent'}]}>{tomorrowData.tmp_min}℃ ~ {tomorrowData.tmp_max}℃</Text>
+                                            style={[S.textWhite,{fontSize:25},{backgroundColor:'transparent'}]}>{tomorrowData.tmp_min}℃ ~ {tomorrowData.tmp_max}℃</Text>
                                         <Text
                                             style={[S.textWhite,S.text15,{backgroundColor:'transparent'}]}>{tomorrowData.cond_txt_d}/{tomorrowData.cond_txt_n}</Text>
                                     </View>
@@ -247,7 +247,7 @@ const SS = {
         S.paddingVertical15,
         S.paddingHorizontal15
     ],
-    dateText: [S.textRight, S.textWhite, S.marginRight5, S.marginTop5, {fontSize: 12}],
+    dateText: [S.textRight, S.textWhite, S.marginTop5, {fontSize: 12}],
     titleColor: '#7b3181',
     yesterColor: '#23BEAF',
     todayColor: '#76AAE5',
