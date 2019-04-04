@@ -3321,6 +3321,10 @@ react-devtools-core@^2.5.0:
     shell-quote "^1.6.1"
     ws "^2.0.3"
 
+react-native-storage@^0.2.2:
+  version "0.2.4"
+  resolved "https://registry.yarnpkg.com/react-native-storage/-/react-native-storage-0.2.4.tgz#a3cba3bf28cb0a16d8f9e6ced8aea26b3020ca10"
+
 react-native@0.50.4:
   version "0.50.4"
   resolved "http://registry.npm.taobao.org/react-native/download/react-native-0.50.4.tgz#194f5da4939087b3acee712a503475f4942dca7e"
