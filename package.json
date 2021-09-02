@@ -8,7 +8,7 @@
       "pack-android": "cd android && ./gradlew assembleRelease"
 	},
 	"dependencies": {
-		"axios": "^0.17.1",
+		"axios": "^0.21.1",
 		"loadash": "^1.0.0",
 		"moment": "^2.19.3",
 		"react": "16.0.0",
