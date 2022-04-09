@@ -10,7 +10,7 @@
 	"dependencies": {
 		"axios": "^0.17.1",
 		"loadash": "^1.0.0",
-		"moment": "^2.19.3",
+		"moment": "^2.29.2",
 		"react": "16.0.0",
 		"react-native": "0.50.4",
 		"react-native-storage": "^0.2.2"
